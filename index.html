@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAJU NAS PRO | Cloud Storage</title>
+    <style>
+        :root {
+            --bg: #0d1117;
+            --card: #161b22;
+            --border: #30363d;
+            --text: #c9d1d9;
+            --primary: #238636;
+            --vault: #8957e5;
+            --accent: #58a6ff;
+            --danger: #f85149;
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; 
+            background: var(--bg); 
+            color: var(--text); 
+            padding: 15px; 
+            margin: 0; 
+            line-height: 1.5;
+        }
+
+        .container { max-width: 600px; margin: 0 auto; }
+
+        .card { 
+            background: var(--card); 
+            border: 1px solid var(--border); 
+            border-radius: 10px; 
+            padding: 20px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        h2, h3 { margin-top: 0; color: var(--accent); }
+
+        input[type="password"], input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border-radius: 6px; 
+            border: 1px solid var(--border); 
+            background: var(--bg); 
+            color: #fff; 
+            box-sizing: border-box; 
+        }
+
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            border-radius: 8px; 
+            border: none; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: #fff; 
+            transition: opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        button:active { opacity: 0.7; }
+        .bg-g { background: var(--primary); } 
+        .bg-p { background: var(--vault); } 
+        .bg-b { background: #30363d; }
+
+        .bar-container { 
+            background: var(--border); 
+            height: 14px; 
+            border-radius: 7px; 
+            margin: 15px 0; 
+            overflow: hidden; 
+            position: relative; 
+        }
+
+        .bar-fill { 
+            background: var(--primary); 
+            height: 100%; 
+            width: 0%; 
+            transition: width 0.4s ease; 
+        }
+
+        .item { 
+            background: #21262d; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-top: 12px; 
+            border: 1px solid var(--border); 
+        }
+
+        .item b { display: block; word-break: break-all; margin-bottom: 5px; }
+
+        video, audio, img { 
+            width: 100%; 
+            border-radius: 5px; 
+            margin-top: 10px; 
+            background: #000; 
+            max-height: 300px;
+            object-fit: contain;
+        }
+
+        .nav-btns { display: flex; gap: 10px; margin-bottom: 20px; }
+
+        #pg-login, #pg-dash, #pg-vault, #pg-set { display: none; }
+        
+        .empty-msg { text-align: center; color: #8b949e; padding: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div id="pg-login" style="display:block">
+        <div class="card" style="margin-top: 80px; text-align: center;">
+            <h1 style="color:var(--accent)">RAJU NAS <span style="font-size: 0.5em; vertical-align: middle; padding: 4px 8px; background: var(--border); border-radius: 5px;">PRO</span></h1>
+            <p>Cloud Storage Simulator</p>
+            <input type="password" id="pass-in" placeholder="Master Password (Default: 1221)">
+            <button class="bg-g" onclick="login()">UNLOCK SYSTEM</button>
+        </div>
+    </div>
+
+    <div id="pg-dash">
+        <div class="card" style="text-align:center">
+            <h2 id="st-f">Calculating...</h2>
+            <div class="bar-container"><div id="st-b" class="bar-fill"></div></div>
+            <small>Used: <span id="st-u">0MB</span> / Capacity: 5GB</small>
+        </div>
+        
+        <div class="card">
+            <h3>Upload to Public</h3>
+            <input type="file" id="up-pub-in" multiple onchange="handleUpload(this, 'public')">
+            <button class="bg-b" onclick="document.getElementById('up-pub-in').click()">SELECT FILES</button>
+        </div>
+
+        <div class="nav-btns">
+            <button class="bg-p" onclick="goVault()">🔒 VAULT</button>
+            <button class="bg-b" onclick="showPage('pg-set')">⚙️ SETTINGS</button>
+        </div>
+
+        <div id="list-pub"></div>
+    </div>
+
+    <div id="pg-vault">
+        <h2 style="color:var(--vault); text-align:center">Secure Vault</h2>
+        <div class="card">
+            <h3>Secure Upload</h3>
+            <input type="file" id="up-pri-in" multiple onchange="handleUpload(this, 'private')">
+            <button class="bg-b" onclick="document.getElementById('up-pri-in').click()">SELECT PRIVATE FILES</button>
+        </div>
+        <button class="bg-b" onclick="showPage('pg-dash')">← EXIT VAULT</button>
+        <div id="list-pri"></div>
+    </div>
+
+    <div id="pg-set">
+        <h2>System Settings</h2>
+        <div class="card">
+            <label>Current Master Password</label>
+            <input type="password" id="set-cur" placeholder="Confirm Current Pass">
+            <label>New Password</label>
+            <input type="password" id="set-new" placeholder="Enter New Pass">
+            <div class="nav-btns">
+                <button class="bg-g" onclick="updatePass('m')">SET MASTER</button>
+                <button class="bg-p" onclick="updatePass('v')">SET VAULT</button>
+            </div>
+            <button class="bg-b" onclick="showPage('pg-dash')">CANCEL</button>
+        </div>
+        <button style="background: var(--danger)" onclick="clearAllData()">⚠️ FACTORY RESET</button>
+    </div>
+</div>
+
+<script>
+    // --- DATABASE LOGIC (IndexedDB for large file storage) ---
+    let db;
+    const dbReq = indexedDB.open("RajuNAS_DB", 1);
+    dbReq.onupgradeneeded = e => {
+        db = e.target.result;
+        db.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+    };
+    dbReq.onsuccess = e => { db = e.target.result; renderFiles(); updateStats(); };
+
+    // --- AUTH LOGIC ---
+    let config = JSON.parse(localStorage.getItem('nas_cfg')) || { m: "1221", v: "0000" };
+
+    function login() {
+        const val = document.getElementById('pass-in').value;
+        if (val === config.m) {
+            sessionStorage.auth = "true";
+            showPage('pg-dash');
+        } else {
+            alert("Access Denied!");
+        }
+    }
+
+    function goVault() {
+        const p = prompt("Enter Vault Key:");
+        if (p === config.v) showPage('pg-vault');
+        else if(p) alert("Invalid Key!");
+    }
+
+    // --- FILE HANDLING ---
+    function handleUpload(input, type) {
+        const files = input.files;
+        for (let file of files) {
+            const reader = new FileReader();
+            reader.onload = e => {
+                const transaction = db.transaction(["files"], "readwrite");
+                transaction.objectStore("files").add({
+                    name: file.name,
+                    size: file.size,
+                    type: type,
+                    mime: file.type,
+                    data: e.target.result,
+                    date: new Date().getTime()
+                });
+                transaction.oncomplete = () => { renderFiles(); updateStats(); };
+            };
+            reader.readAsDataURL(file);
+        }
+        input.value = '';
+    }
+
+    function renderFiles() {
+        const pubList = document.getElementById('list-pub');
+        const priList = document.getElementById('list-pri');
+        pubList.innerHTML = ''; priList.innerHTML = '';
+
+        const store = db.transaction("files").objectStore("files");
+        store.openCursor().onsuccess = e => {
+            const cursor = e.target.result;
+            if (cursor) {
+                const f = cursor.value;
+                const sizeStr = (f.size / (1024 * 1024)).toFixed(2) + " MB";
+                let media = '';
+                
+                if (f.mime.startsWith('image/')) media = `<img src="${f.data}">`;
+                else if (f.mime.startsWith('video/')) media = `<video controls src="${f.data}"></video>`;
+                else if (f.mime.startsWith('audio/')) media = `<audio controls src="${f.data}"></audio>`;
+
+                const html = `
+                    <div class="item">
+                        <b>${f.name}</b> <small>${sizeStr}</small>
+                        ${media}
+                        <div style="display:flex; gap:10px; margin-top:10px;">
+                            <a href="${f.data}" download="${f.name}" style="flex:1; background:var(--border); color:var(--accent); text-align:center; padding:8px; border-radius:5px; text-decoration:none; font-size:12px;">DOWNLOAD</a>
+                            <span onclick="deleteFile(${f.id})" style="flex:1; background:var(--border); color:var(--danger); text-align:center; padding:8px; border-radius:5px; cursor:pointer; font-size:12px;">DELETE</span>
+                        </div>
+                    </div>`;
+
+                if (f.type === 'public') pubList.innerHTML += html;
+                else priList.innerHTML += html;
+                
+                cursor.continue();
+            }
+        };
+    }
+
+    function deleteFile(id) {
+        if (confirm("Permanently delete this file?")) {
+            const transaction = db.transaction(["files"], "readwrite");
+            transaction.objectStore("files").delete(id);
+            transaction.oncomplete = () => { renderFiles(); updateStats(); };
+        }
+    }
+
+    // --- SYSTEM UTILS ---
+    function updateStats() {
+        let totalSize = 0;
+        const store = db.transaction("files").objectStore("files");
+        store.openCursor().onsuccess = e => {
+            const cursor = e.target.result;
+            if (cursor) {
+                totalSize += cursor.value.size;
+                cursor.continue();
+            } else {
+                const usedMB = (totalSize / (1024 * 1024)).toFixed(1);
+                const freeMB = (5120 - (totalSize / (1024 * 1024))).toFixed(1);
+                const perc = ((usedMB / 5120) * 100).toFixed(1);
+                
+                document.getElementById('st-f').innerText = freeMB + " MB Free";
+                document.getElementById('st-u').innerText = usedMB + " MB";
+                document.getElementById('st-b').style.width = perc + "%";
+            }
+        };
+    }
+
+    function updatePass(type) {
+        const cur = document.getElementById('set-cur').value;
+        const nxt = document.getElementById('set-new').value;
+        if (cur === config.m) {
+            if (type === 'm') config.m = nxt; else config.v = nxt;
+            localStorage.setItem('nas_cfg', JSON.stringify(config));
+            alert("Updated! Please login again.");
+            location.reload();
+        } else alert("Incorrect Master Password");
+    }
+
+    function clearAllData() {
+        if(confirm("This will delete ALL files and reset passwords. Continue?")) {
+            indexedDB.deleteDatabase("RajuNAS_DB");
+            localStorage.clear();
+            location.reload();
+        }
+    }
+
+    function showPage(id) {
+        document.querySelectorAll('.container > div').forEach(p => p.style.display='none');
+        document.getElementById(id).style.display='block';
+    }
+
+    if (sessionStorage.auth === "true") showPage('pg-dash');
+</script>
+
+</body>
+</html>
